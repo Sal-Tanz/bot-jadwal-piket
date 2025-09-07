@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Piket Scheduler Bot</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .tab-button.active { background-color: #3B82F6; color: white; }
+        .sidebar-link.active { background-color: #4a5568; }
         .loading {
             display: inline-block;
             width: 20px;
@@ -23,258 +24,274 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-blue-600 text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold">🤖 Piket Scheduler Bot - Admin Panel</h1>
-            <div class="flex items-center space-x-4">
-                <span id="wa-status" class="px-3 py-1 rounded text-sm bg-red-500">
-                    <span class="loading mr-2"></span>Connecting...
-                </span>
-                <a href="/logout" class="bg-red-500 hover:bg-red-700 px-4 py-2 rounded transition duration-200">
-                    Logout
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <div class="flex h-screen bg-gray-200">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 text-white flex flex-col">
+            <div class="p-6 text-2xl font-bold border-b border-gray-700">
+                <i class="fas fa-robot mr-2"></i>Piket Bot
+            </div>
+            <nav class="flex-1 px-4 py-4 space-y-2">
+                <a href="#" class="tab-button sidebar-link active flex items-center px-4 py-2 rounded-lg hover:bg-gray-700" onclick="showTab('whatsapp', this)">
+                    <i class="fas fa-brands fa-whatsapp mr-3"></i>WhatsApp Status
+                </a>
+                <a href="#" class="tab-button sidebar-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700" onclick="showTab('members', this)">
+                    <i class="fas fa-users mr-3"></i>Anggota Piket
+                </a>
+                <a href="#" class="tab-button sidebar-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700" onclick="showTab('schedules', this)">
+                    <i class="fas fa-calendar-alt mr-3"></i>Jadwal Piket
+                </a>
+                <a href="#" class="tab-button sidebar-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700" onclick="showTab('settings', this)">
+                    <i class="fas fa-cog mr-3"></i>Pengaturan Akun
+                </a>
+                <a href="#" class="tab-button sidebar-link flex items-center px-4 py-2 rounded-lg hover:bg-gray-700" onclick="showTab('test', this)">
+                    <i class="fas fa-paper-plane mr-3"></i>Test Pesan
+                </a>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <a href="/logout" class="flex items-center justify-center bg-red-600 hover:bg-red-700 px-4 py-2 rounded transition duration-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
                 </a>
             </div>
         </div>
-    </nav>
 
-    <div class="container mx-auto mt-8 px-4">
-        <!-- Tab Navigation -->
-        <div class="flex flex-wrap space-x-1 mb-6 bg-white rounded-lg p-1 shadow">
-            <button class="tab-button active px-4 py-2 rounded transition duration-200" onclick="showTab('whatsapp')">
-                📱 WhatsApp Status
-            </button>
-            <button class="tab-button px-4 py-2 rounded transition duration-200" onclick="showTab('members')">
-                👥 Anggota Piket
-            </button>
-            <button class="tab-button px-4 py-2 rounded transition duration-200" onclick="showTab('schedules')">
-                📅 Jadwal Piket
-            </button>
-            <button class="tab-button px-4 py-2 rounded transition duration-200" onclick="showTab('test')">
-                🧪 Test Pesan
-            </button>
-        </div>
-
-        <!-- WhatsApp Status Tab -->
-        <div id="whatsapp-tab" class="tab-content active">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800">📱 Status WhatsApp</h2>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-white shadow-md p-4 flex justify-between items-center">
+                <h1 class="text-2xl font-semibold text-gray-800">Admin Dashboard</h1>
+                <div class="flex items-center space-x-4">
+                    <span id="wa-status" class="px-3 py-1 rounded text-sm text-white bg-red-500">
+                        <span class="loading mr-2"></span>Connecting...
+                    </span>
                 </div>
-                <div id="qr-container" class="text-center">
-                    <div class="flex items-center justify-center">
-                        <div class="loading mr-3"></div>
-                        <p class="text-gray-600">Memuat status WhatsApp...</p>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-blue-500 bg-opacity-20">
+                                <i class="fas fa-users text-blue-500 fa-2x"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-600">Total Anggota</p>
+                                <p id="stats-total-members" class="text-2xl font-bold">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-green-500 bg-opacity-20">
+                                <i class="fas fa-user-check text-green-500 fa-2x"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-600">Anggota Aktif</p>
+                                <p id="stats-active-members" class="text-2xl font-bold">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-yellow-500 bg-opacity-20">
+                                <i class="fas fa-calendar-alt text-yellow-500 fa-2x"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-600">Total Jadwal</p>
+                                <p id="stats-total-schedules" class="text-2xl font-bold">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-full bg-purple-500 bg-opacity-20">
+                                <i class="fas fa-calendar-check text-purple-500 fa-2x"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-gray-600">Jadwal Aktif</p>
+                                <p id="stats-active-schedules" class="text-2xl font-bold">0</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Members Tab -->
-        <div id="members-tab" class="tab-content">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">👥 Anggota Piket</h2>
-                    <button onclick="showAddMemberForm()" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-200 flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Tambah Anggota
-                    </button>
-                </div>
-                
-                <!-- Add Member Form -->
-                <div id="add-member-form" class="mb-6 p-4 border rounded-lg bg-gray-50 hidden">
-                    <h3 class="font-bold mb-4 text-lg">➕ Tambah Anggota Baru</h3>
-                    <form onsubmit="addMember(event)">
-                        <div class="grid md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nama Anggota</label>
-                                <input type="text" id="member-name" placeholder="Masukkan nama lengkap" required 
-                                       class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nomor WhatsApp</label>
-                                <input type="text" id="member-phone" placeholder="628123456789" required 
-                                       class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <small class="text-gray-500">Format: 628xxx (tanpa tanda +)</small>
+                <!-- Tab Content -->
+                <div id="whatsapp-tab" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center"><i class="fab fa-whatsapp mr-3 text-green-500"></i>Status WhatsApp</h2>
+                        <div id="qr-container" class="text-center p-4 border rounded-lg bg-gray-50">
+                            <div class="flex items-center justify-center">
+                                <div class="loading mr-3 border-gray-400 border-top-color-gray-800"></div>
+                                <p class="text-gray-600">Memuat status WhatsApp...</p>
                             </div>
                         </div>
-                        <div class="flex space-x-2">
-                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded transition duration-200">
-                                💾 Simpan
-                            </button>
-                            <button type="button" onclick="hideAddMemberForm()" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded transition duration-200">
-                                ❌ Batal
+                    </div>
+                </div>
+
+                <div id="members-tab" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 flex items-center"><i class="fas fa-users mr-3 text-blue-500"></i>Anggota Piket</h2>
+                            <button onclick="showAddMemberForm()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center">
+                                <i class="fas fa-plus mr-2"></i>Tambah Anggota
                             </button>
                         </div>
-                    </form>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full table-auto">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. WhatsApp</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notifikasi</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="members-list" class="bg-white divide-y divide-gray-200">
-                            <!-- Members will be loaded here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Schedules Tab -->
-        <div id="schedules-tab" class="tab-content">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">📅 Jadwal Piket</h2>
-                    <button onclick="showAddScheduleForm()" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-200 flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Tambah Jadwal
-                    </button>
-                </div>
-
-                <!-- Add Schedule Form -->
-                <div id="add-schedule-form" class="mb-6 p-4 border rounded-lg bg-gray-50 hidden">
-                    <h3 class="font-bold mb-4 text-lg">➕ Tambah Jadwal Baru</h3>
-                    <form onsubmit="addSchedule(event)">
-                        <div class="grid md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Anggota</label>
-                                <select id="schedule-member" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">Pilih Anggota</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Jadwal</label>
-                                <select id="schedule-type" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500" onchange="updateScheduleValueField()">
-                                    <option value="">Pilih Tipe Jadwal</option>
-                                    <option value="daily">Harian (Setiap Hari)</option>
-                                    <option value="weekly">Mingguan (Hari Tertentu)</option>
-                                    <option value="date">Tanggal Tertentu</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="grid md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Jadwal</label>
-                                <div id="schedule-value-container">
-                                    <input type="text" id="schedule-value" placeholder="Nilai Jadwal" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <div id="add-member-form" class="mb-6 p-4 border rounded-lg bg-gray-50 hidden">
+                            <h3 class="font-bold mb-4 text-lg">Tambah Anggota Baru</h3>
+                            <form onsubmit="addMember(event)">
+                                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                    <input type="text" id="member-name" placeholder="Nama Anggota" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500">
+                                    <input type="text" id="member-phone" placeholder="628123456789" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500">
                                 </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Waktu</label>
-                                <input type="time" id="schedule-time" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="08:00">
-                            </div>
+                                <div class="flex space-x-2">
+                                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Simpan</button>
+                                    <button type="button" onclick="hideAddMemberForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Batal</button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="mb-4">
-                            <label class="flex items-center">
-                                <input type="checkbox" id="schedule-recurring" checked class="mr-2 focus:ring-2 focus:ring-blue-500">
-                                <span class="text-sm font-medium text-gray-700">Jadwal Berulang</span>
-                            </label>
-                            <small class="text-gray-500 ml-6">Uncheck untuk jadwal sekali kirim</small>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. WhatsApp</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notifikasi</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="members-list" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
                         </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Template Pesan (Opsional)</label>
-                            <textarea id="schedule-message" placeholder="Kosongkan untuk menggunakan template default&#10;&#10;Gunakan placeholder:&#10;{{name}} - Nama anggota&#10;{{date}} - Tanggal hari ini&#10;{{time}} - Waktu jadwal" 
-                                      class="border rounded px-3 py-2 w-full h-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-                            <small class="text-gray-600">Gunakan {{name}}, {{date}}, {{time}} untuk placeholder</small>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded transition duration-200">
-                                💾 Simpan Jadwal
-                            </button>
-                            <button type="button" onclick="hideAddScheduleForm()" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded transition duration-200">
-                                ❌ Batal
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="min-w-full table-auto">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berulang</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="schedules-list" class="bg-white divide-y divide-gray-200">
-                            <!-- Schedules will be loaded here -->
-                        </tbody>
-                    </table>
+                <div id="schedules-tab" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                         <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-gray-800 flex items-center"><i class="fas fa-calendar-alt mr-3 text-yellow-500"></i>Jadwal Piket</h2>
+                            <button onclick="showAddScheduleForm()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center">
+                                <i class="fas fa-plus mr-2"></i>Tambah Jadwal
+                            </button>
+                        </div>
+                        <div id="add-schedule-form" class="mb-6 p-4 border rounded-lg bg-gray-50 hidden">
+                            <h3 class="font-bold mb-4 text-lg">Tambah Jadwal Baru</h3>
+                            <form onsubmit="addSchedule(event)">
+                                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                    <select id="schedule-member" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500"></select>
+                                    <select id="schedule-type" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500" onchange="updateScheduleValueField()">
+                                        <option value="">Pilih Tipe Jadwal</option>
+                                        <option value="daily">Harian (Setiap Hari)</option>
+                                        <option value="weekly">Mingguan (Hari Tertentu)</option>
+                                        <option value="date">Tanggal Tertentu</option>
+                                    </select>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                    <div id="schedule-value-container"></div>
+                                    <input type="time" id="schedule-time" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500" value="08:00">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="schedule-recurring" checked class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        Jadwal Berulang
+                                    </label>
+                                </div>
+                                <textarea id="schedule-message" placeholder="Template Pesan (Opsional). Gunakan {{name}}, {{date}}, {{time}}" class="border rounded px-3 py-2 w-full h-24 focus:ring-2 focus:ring-blue-500"></textarea>
+                                <div class="flex space-x-2 mt-4">
+                                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Simpan Jadwal</button>
+                                    <button type="button" onclick="hideAddScheduleForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Batal</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berulang</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schedules-list" class="bg-white divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Test Message Tab -->
-        <div id="test-tab" class="tab-content">
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800">🧪 Test Pesan WhatsApp</h2>
-                <div class="max-w-2xl">
-                    <form onsubmit="sendTestMessage(event)">
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nomor WhatsApp Target</label>
-                            <input type="text" id="test-phone" placeholder="628123456789" required 
-                                   class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <small class="text-gray-500">Format: 628xxx (tanpa tanda + atau spasi)</small>
-                        </div>
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Pesan Test</label>
-                            <textarea id="test-message" placeholder="🔔 Test Pesan dari Bot Piket&#10;&#10;Halo! Ini adalah pesan test untuk memastikan bot berjalan dengan baik.&#10;&#10;Terima kasih! 😊" required 
-                                      class="border rounded px-3 py-2 w-full h-40 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-                        </div>
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <h3 class="text-sm font-medium text-yellow-800">Catatan Penting</h3>
-                                    <div class="mt-2 text-sm text-yellow-700">
-                                        <ul class="list-disc list-inside space-y-1">
-                                            <li>Pastikan WhatsApp bot sudah terhubung (status: Connected)</li>
-                                            <li>Nomor target harus dalam format internasional tanpa tanda +</li>
-                                            <li>Bot hanya dapat mengirim ke nomor yang sudah pernah chat dengan akun WhatsApp bot</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                <div id="test-tab" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center"><i class="fas fa-paper-plane mr-3 text-purple-500"></i>Test Pesan WhatsApp</h2>
+                        <form onsubmit="sendTestMessage(event)">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nomor WhatsApp Target</label>
+                                <input type="text" id="test-phone" placeholder="628123456789" required class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500">
                             </div>
-                        </div>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-6 py-3 rounded transition duration-200 flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
-                            Kirim Test Pesan
-                        </button>
-                    </form>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pesan</label>
+                                <textarea id="test-message" placeholder="Tulis pesan test..." required class="border rounded px-3 py-2 w-full h-32 focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                             <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+                                <p class="font-bold">Perhatian</p>
+                                <p>Pastikan bot sudah terhubung dan nomor target sudah pernah berinteraksi dengan bot.</p>
+                            </div>
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
+                                <i class="fas fa-paper-plane mr-2"></i>Kirim Test Pesan
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
+
+                <div id="settings-tab" class="tab-content">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center"><i class="fas fa-cog mr-3 text-gray-500"></i>Pengaturan Akun</h2>
+                        <div class="max-w-2xl">
+                            <form onsubmit="updateAdminCredentials(event)">
+                                <div class="mb-6 bg-gray-50 p-4 rounded-lg border">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Password Saat Ini</label>
+                                    <input type="password" id="current-password" placeholder="Masukkan password Anda saat ini" required
+                                           class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-red-500">
+                                    <small class="text-gray-500">Diperlukan untuk memvalidasi perubahan.</small>
+                                </div>
+
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Username Baru (Opsional)</label>
+                                    <input type="text" id="new-username" placeholder="Biarkan kosong jika tidak ingin mengubah"
+                                           class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Password Baru (Opsional)</label>
+                                    <input type="password" id="new-password" placeholder="Biarkan kosong jika tidak ingin mengubah"
+                                           class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password Baru</label>
+                                    <input type="password" id="confirm-password" placeholder="Konfirmasi password baru Anda"
+                                           class="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-500">
+                                </div>
+
+                                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+                                    <p class="font-bold">Catatan</p>
+                                    <p>Setelah berhasil, Anda mungkin akan diminta untuk login kembali.</p>
+                                </div>
+
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition duration-200 flex items-center">
+                                    <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="mt-12 bg-gray-800 text-white py-6">
-        <div class="container mx-auto px-4 text-center">
-            <p>&copy; 2024 Piket Scheduler Bot. Dibuat dengan ❤️ untuk memudahkan manajemen jadwal piket.</p>
-        </div>
-    </footer>
 
     <script src="/js/dashboard.js"></script>
 </body>

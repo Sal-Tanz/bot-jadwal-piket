@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const router = express.Router();
 
 module.exports = function(db, client, getWaStatus) {
@@ -8,6 +9,23 @@ module.exports = function(db, client, getWaStatus) {
         res.json({
             isReady: isClientReady,
             qrCode: qrCode || ''
+        });
+    });
+
+    // Stats API
+    router.get('/stats', (req, res) => {
+        const sql = `
+            SELECT
+              (SELECT COUNT(*) FROM members) as totalMembers,
+              (SELECT COUNT(*) FROM members WHERE is_active = 1) as activeMembers,
+              (SELECT COUNT(*) FROM schedules) as totalSchedules,
+              (SELECT COUNT(*) FROM schedules WHERE is_active = 1) as activeSchedules
+        `;
+        db.get(sql, (err, row) => {
+            if (err) {
+                return res.status(500).json({ error: 'Gagal mengambil statistik' });
+            }
+            res.json(row);
         });
     });
 
@@ -134,6 +152,57 @@ module.exports = function(db, client, getWaStatus) {
         } catch (error) {
             res.status(400).json({ error: 'Gagal mengirim pesan: ' + error.message });
         }
+    });
+
+    // Admin credentials API
+    router.put('/admin/credentials', (req, res) => {
+        if (!req.session.adminId) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const { currentPassword, newUsername, newPassword } = req.body;
+        const adminId = req.session.adminId;
+
+        db.get("SELECT * FROM admins WHERE id = ?", [adminId], (err, admin) => {
+            if (err || !admin) {
+                return res.status(500).json({ error: 'Gagal mengambil data admin.' });
+            }
+
+            if (!bcrypt.compareSync(currentPassword, admin.password)) {
+                return res.status(401).json({ error: 'Password saat ini salah.' });
+            }
+
+            let queryParts = [];
+            let params = [];
+
+            if (newUsername) {
+                queryParts.push("username = ?");
+                params.push(newUsername);
+            }
+
+            if (newPassword) {
+                queryParts.push("password = ?");
+                const hashedPassword = bcrypt.hashSync(newPassword, 10);
+                params.push(hashedPassword);
+            }
+
+            if (queryParts.length === 0) {
+                return res.status(400).json({ error: 'Tidak ada data yang diubah.' });
+            }
+
+            params.push(adminId);
+            const sql = `UPDATE admins SET ${queryParts.join(', ')} WHERE id = ?`;
+
+            db.run(sql, params, function(err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE constraint failed: admins.username')) {
+                        return res.status(400).json({ error: 'Username tersebut sudah digunakan.' });
+                    }
+                    return res.status(500).json({ error: 'Gagal memperbarui kredensial.' });
+                }
+                res.json({ message: 'Kredensial berhasil diperbarui.' });
+            });
+        });
     });
 
     return router;
