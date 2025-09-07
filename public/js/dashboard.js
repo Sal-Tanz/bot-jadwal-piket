@@ -1,18 +1,26 @@
 // Dashboard JavaScript Functions
 
 // Tab functionality
-function showTab(tabName) {
+function showTab(tabName, element) {
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
     
     // Show selected tab
     document.getElementById(tabName + '-tab').classList.add('active');
-    event.target.classList.add('active');
+    if (element) {
+        element.classList.add('active');
+    }
     
     // Load data for specific tabs
     if (tabName === 'members') loadMembers();
     if (tabName === 'schedules') loadSchedules();
+
+    // Hide sidebar on mobile after a tab is clicked
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && window.innerWidth < 768) { // 768px is the default 'md' breakpoint
+        sidebar.classList.add('sidebar-hidden');
+    }
 }
 
 // WhatsApp status check
@@ -122,6 +130,7 @@ function addMember(event) {
             alert('Anggota berhasil ditambahkan!');
             hideAddMemberForm();
             loadMembers();
+            loadStats();
         }
     })
     .catch(error => {
@@ -151,6 +160,7 @@ function toggleMemberStatus(member) {
             } else {
                 alert('Status anggota berhasil diupdate!');
                 loadMembers();
+                loadStats();
             }
         })
         .catch(error => {
@@ -197,6 +207,7 @@ function deleteMember(id) {
             .then(data => {
                 alert('Anggota berhasil dihapus!');
                 loadMembers();
+                loadStats();
             })
             .catch(error => {
                 console.error('Error deleting member:', error);
@@ -325,6 +336,7 @@ function addSchedule(event) {
             alert('Jadwal berhasil ditambahkan!');
             hideAddScheduleForm();
             loadSchedules();
+            loadStats();
         }
     })
     .catch(error => {
@@ -358,6 +370,7 @@ function toggleSchedule(id) {
                     .then(data => {
                         alert('Status jadwal berhasil diupdate!');
                         loadSchedules();
+                        loadStats();
                     });
                 }
             });
@@ -371,12 +384,30 @@ function deleteSchedule(id) {
             .then(data => {
                 alert('Jadwal berhasil dihapus!');
                 loadSchedules();
+                loadStats();
             })
             .catch(error => {
                 console.error('Error deleting schedule:', error);
                 alert('Terjadi kesalahan saat menghapus jadwal');
             });
     }
+}
+
+// Stats Function
+function loadStats() {
+    fetch('/api/stats')
+        .then(response => response.json())
+        .then(stats => {
+            if (document.getElementById('stats-total-members')) {
+                document.getElementById('stats-total-members').textContent = stats.totalMembers || 0;
+                document.getElementById('stats-active-members').textContent = stats.activeMembers || 0;
+                document.getElementById('stats-total-schedules').textContent = stats.totalSchedules || 0;
+                document.getElementById('stats-active-schedules').textContent = stats.activeSchedules || 0;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading stats:', error);
+        });
 }
 
 // Test message function
@@ -406,6 +437,61 @@ function sendTestMessage(event) {
     });
 }
 
+function updateAdminCredentials(event) {
+    event.preventDefault();
+
+    const currentPassword = document.getElementById('current-password').value;
+    const newUsername = document.getElementById('new-username').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+
+    if (newPassword !== confirmPassword) {
+        alert('Error: Password baru dan konfirmasi password tidak cocok!');
+        return;
+    }
+
+    if (!newUsername && !newPassword) {
+        alert('Info: Anda tidak memasukkan username atau password baru untuk diubah.');
+        return;
+    }
+
+    const body = {
+        currentPassword: currentPassword,
+        newUsername: newUsername || null,
+        newPassword: newPassword || null,
+    };
+
+    fetch('/api/admin/credentials', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            alert(data.message);
+            // Clear the form
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+
+            // Optional: redirect to login if password was changed
+            if (body.newPassword) {
+                setTimeout(() => {
+                    window.location.href = '/logout';
+                }, 1500);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error updating credentials:', error);
+        alert('Terjadi kesalahan saat memperbarui kredensial.');
+    });
+}
+
 // Helper functions
 function capitalizeFirst(str) {
     if (!str) return '';
@@ -428,7 +514,23 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard initialized');
     checkWhatsAppStatus();
     setInterval(checkWhatsAppStatus, 5000); // Check every 5 seconds
+    loadStats();
     loadMembers();
+
+    // Activate the first tab
+    const firstTab = document.querySelector('.sidebar-link');
+    if (firstTab) {
+        showTab('whatsapp', firstTab);
+    }
+
+    // Responsive sidebar toggle
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-hidden');
+        });
+    }
     
     // Store qrCode globally for whatsapp status updates
     window.qrCodeGlobal = '';
