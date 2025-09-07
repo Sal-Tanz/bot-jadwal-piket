@@ -54,6 +54,9 @@ function loadMembers() {
             tbody.innerHTML = '';
             
             members.forEach(member => {
+                // Escape member data for onclick attribute
+                const memberData = JSON.stringify(member).replace(/'/g, "\\'");
+
                 tbody.innerHTML += `
                     <tr class="border-b">
                         <td class="px-4 py-2">${member.name}</td>
@@ -69,8 +72,8 @@ function loadMembers() {
                             </span>
                         </td>
                         <td class="px-4 py-2">
-                            <button onclick="toggleMemberStatus(${member.id})" class="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-1 rounded text-sm mr-1">Toggle Status</button>
-                            <button onclick="toggleMemberNotifications(${member.id})" class="bg-blue-500 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm mr-1">Toggle Notif</button>
+                            <button onclick='toggleMemberStatus(${memberData})' class="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-1 rounded text-sm mr-1">Toggle Status</button>
+                            <button onclick='toggleMemberNotifications(${memberData})' class="bg-blue-500 hover:bg-blue-700 text-white px-2 py-1 rounded text-sm mr-1">Toggle Notif</button>
                             <button onclick="deleteMember(${member.id})" class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-sm">Hapus</button>
                         </td>
                     </tr>
@@ -127,59 +130,63 @@ function addMember(event) {
     });
 }
 
-function toggleMemberStatus(id) {
+function toggleMemberStatus(member) {
     if (confirm('Toggle status aktif anggota ini?')) {
-        fetch('/api/members')
-            .then(response => response.json())
-            .then(members => {
-                const member = members.find(m => m.id === id);
-                if (member) {
-                    const newStatus = !member.is_active;
-                    fetch(`/api/members/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: member.name,
-                            phone: member.phone,
-                            is_active: newStatus,
-                            notifications_enabled: member.notifications_enabled
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert('Status anggota berhasil diupdate!');
-                        loadMembers();
-                    });
-                }
-            });
+        const newStatus = !member.is_active;
+
+        fetch(`/api/members/${member.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: member.name,
+                phone: member.phone,
+                is_active: newStatus,
+                notifications_enabled: member.notifications_enabled
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                alert('Status anggota berhasil diupdate!');
+                loadMembers();
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling member status:', error);
+            alert('Terjadi kesalahan saat mengupdate status');
+        });
     }
 }
 
-function toggleMemberNotifications(id) {
+function toggleMemberNotifications(member) {
     if (confirm('Toggle notifikasi anggota ini?')) {
-        fetch('/api/members')
-            .then(response => response.json())
-            .then(members => {
-                const member = members.find(m => m.id === id);
-                if (member) {
-                    const newNotificationStatus = !member.notifications_enabled;
-                    fetch(`/api/members/${id}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            name: member.name,
-                            phone: member.phone,
-                            is_active: member.is_active,
-                            notifications_enabled: newNotificationStatus
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert('Notifikasi anggota berhasil diupdate!');
-                        loadMembers();
-                    });
-                }
-            });
+        const newNotificationStatus = !member.notifications_enabled;
+
+        fetch(`/api/members/${member.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: member.name,
+                phone: member.phone,
+                is_active: member.is_active,
+                notifications_enabled: newNotificationStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('Error: ' + data.error);
+            } else {
+                alert('Notifikasi anggota berhasil diupdate!');
+                loadMembers();
+            }
+        })
+        .catch(error => {
+            console.error('Error toggling member notifications:', error);
+            alert('Terjadi kesalahan saat mengupdate notifikasi');
+        });
     }
 }
 

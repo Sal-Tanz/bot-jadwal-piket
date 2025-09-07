@@ -72,7 +72,7 @@ function requireAuth(req, res, next) {
 
 // Import routes
 const authRoutes = require('./routes/auth')(db);
-const apiRoutes = require('./routes/api')(db, client, isClientReady);
+const apiRoutes = require('./routes/api')(db, client, () => ({ isClientReady, qrCode }));
 const adminRoutes = require('./routes/admin');
 
 // Use routes
