@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-module.exports = function(db, client, isClientReady) {
+module.exports = function(db, client, getWaStatus) {
     // WhatsApp status API
     router.get('/whatsapp-status', (req, res) => {
+        const { isClientReady, qrCode } = getWaStatus();
         res.json({
             isReady: isClientReady,
-            qrCode: global.qrCode || ''
+            qrCode: qrCode || ''
         });
     });
 
@@ -120,6 +121,7 @@ module.exports = function(db, client, isClientReady) {
     // Test message API
     router.post('/test-message', async (req, res) => {
         const { phone, message } = req.body;
+        const { isClientReady } = getWaStatus();
         
         if (!isClientReady) {
             return res.status(400).json({ error: 'WhatsApp client belum siap' });
