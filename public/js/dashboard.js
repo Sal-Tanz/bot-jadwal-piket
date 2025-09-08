@@ -19,7 +19,7 @@ function showTab(tabName, element) {
     // Hide sidebar on mobile after a tab is clicked
     const sidebar = document.getElementById('sidebar');
     if (sidebar && window.innerWidth < 768) { // 768px is the default 'md' breakpoint
-        sidebar.classList.add('sidebar-hidden');
+        sidebar.classList.add('-translate-x-full');
     }
 }
 
@@ -528,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebar-toggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('sidebar-hidden');
+            sidebar.classList.toggle('-translate-x-full');
         });
     }
     
